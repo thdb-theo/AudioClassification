@@ -51,9 +51,9 @@ def create_spectogram(song_name, save_image=False):
 
     f, t, Sxx = scipy.signal.spectrogram(song, samplerate)
     # print(Sxx)
-    fig = plt.figure(figsize=(10,10))
+    fig = plt.figure(figsize=(200, 200), dpi=1)
 
-    plt.pcolormesh(t, f, 10*np.log10(Sxx), shading='gouraud')
+    plt.pcolormesh(t, f, np.log(Sxx), shading='gouraud')
     plt.axis('off')
     plt.tight_layout(pad=0)
     fig.canvas.draw()

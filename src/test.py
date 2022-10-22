@@ -5,5 +5,5 @@ from matplotlib import pyplot as plt
 images = np.load("../data/processed/images.npy")
 print(images.shape)
 
-plt.imshow(images[1], cmap="gray")
+plt.imshow(images[0], cmap="gray")
 plt.show()
