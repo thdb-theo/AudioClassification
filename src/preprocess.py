@@ -53,7 +53,7 @@ def create_spectogram(song_name, save_image=False):
     # print(Sxx)
     fig = plt.figure(figsize=(200, 200), dpi=1)
 
-    plt.pcolormesh(t, f, np.log(Sxx), shading='gouraud')
+    plt.pcolormesh(t, f, np.log1p(Sxx), shading='gouraud')
     plt.axis('off')
     plt.tight_layout(pad=0)
     fig.canvas.draw()
