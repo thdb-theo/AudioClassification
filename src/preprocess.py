@@ -16,7 +16,7 @@ def rgb2gray(rgb):
 
 # extract labels
 df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["filename", "label"])
-
+df = df.sort_values("filename")
 # one-hot encoding
 label_encoder = LabelEncoder()
 integer_encoded = label_encoder.fit_transform(df["label"])
@@ -26,16 +26,15 @@ onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
 
 np.save("../data/processed/labels.npy", onehot_encoded)
 
-
 # extract data
 audio_dict = {}
 from pathlib import Path
 genre_folders = Path("../data/Data/genres_original").iterdir()
-for genre_folder in genre_folders:
+for genre_folder in sorted(genre_folders):
+    print(genre_folder)
     files = Path(genre_folder).iterdir()
-    for file in files:
+    for file in sorted(files):
         filename = file.as_posix().rsplit('/', 1)[1]
-        print(filename)
         try:
             samplerate, data = wavfile.read(file)
             audio_dict[filename] = (samplerate, data)
@@ -64,14 +63,14 @@ def create_spectogram(song_name, save_image=False):
 
     gray_image = rgb2gray(mplimage)
     if save_image:
-        np.save(f"../data/processed/{song_name}", gray_image)
+        plt.savefig(f"../data/processed/{song_name}.png")
     plt.close()
     return gray_image
 
 images = []
 # for song in tqdm(iter(["blues.00000.wav", "blues.00001.wav", "blues.00002.wav"])):
 for song in tqdm(audio_dict.keys()):
-    image = create_spectogram(song)
+    image = create_spectogram(song, save_image=False)
     images.append(image)
 images_array = np.stack(images, axis=0)
 np.save("../data/processed/images.npy", images_array)
