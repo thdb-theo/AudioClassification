@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import random
 
 def LabelToGenre(label):
+    label = list(label)
     ind = label.index(max(label))
     Map = {
         0: "blues",
@@ -15,8 +16,10 @@ def LabelToGenre(label):
         8: "reggae",
         9: "rock"
     }
-    print(Map[ind])
-    return ind
+    return Map[ind]
+
+print(LabelToGenre([1,0,0,0,0,0,0,0,0,0]))
+
 
 def ShowImageFromEachClass(imgs):
     plt.figure(figsize=(22, 8))
