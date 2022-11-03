@@ -17,14 +17,20 @@ def rgb2gray(rgb):
 # extract labels
 df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["filename", "label"])
 df = df.sort_values("filename")
+print(df.head())
 # one-hot encoding
 label_encoder = LabelEncoder()
 integer_encoded = label_encoder.fit_transform(df["label"])
 onehot_encoder = OneHotEncoder(sparse=False)
 integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
 onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+print(onehot_encoded.shape)
 
-np.save("../data/processed/labels.npy", onehot_encoded)
+cuts = [1, 0.9, 0.8, 0.7]
+
+extended_labels = onehot_encoded.repeat(repeats=len(cuts), axis=0)
+
+np.save("../data/processed/labels.npy", extended_labels)
 
 # extract data
 audio_dict = {}
@@ -38,18 +44,17 @@ for genre_folder in sorted(genre_folders):
         try:
             samplerate, data = wavfile.read(file)
             audio_dict[filename] = (samplerate, data)
+
         except ValueError as err:
             print(file)
             print(err)
 
-minlength = min(map(lambda x: len(x[1]), audio_dict.values()))
 
-def create_spectogram(song_name, save_image=False):
+def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
     samplerate, song = audio_dict[song_name]
-    song = song[:minlength]
+    song = song[:int(len(song) * cut_ratio)]
 
     f, t, Sxx = scipy.signal.spectrogram(song, samplerate)
-    # print(Sxx)
     fig = plt.figure(figsize=(200, 200), dpi=1)
 
     plt.pcolormesh(t, f, np.log1p(Sxx), shading='gouraud')
@@ -63,14 +68,14 @@ def create_spectogram(song_name, save_image=False):
 
     gray_image = rgb2gray(mplimage)
     if save_image:
-        plt.savefig(f"../data/processed/{song_name}.png")
+        plt.savefig(f"../data/processed/{song_name}-{cut_ratio}.png")
     plt.close()
     return gray_image
 
 images = []
-# for song in tqdm(iter(["blues.00000.wav", "blues.00001.wav", "blues.00002.wav"])):
 for song in tqdm(audio_dict.keys()):
-    image = create_spectogram(song, save_image=False)
-    images.append(image)
+    for cut in cuts:
+        image = create_spectogram(song, save_image=False, cut_ratio=cut)
+        images.append(image)
 images_array = np.stack(images, axis=0)
 np.save("../data/processed/images.npy", images_array)
