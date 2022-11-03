@@ -78,4 +78,4 @@ for song in tqdm(audio_dict.keys()):
         image = create_spectogram(song, save_image=False, cut_ratio=cut)
         images.append(image)
 images_array = np.stack(images, axis=0)
-np.save("../data/processed/images.npy", images_array)
+np.save("../data/processed/images2.npy", images_array)
