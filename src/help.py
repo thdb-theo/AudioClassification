@@ -12,12 +12,13 @@ def label_to_genre(label):
     print(genres[ind])
     return ind
 
-def show_image_from_each_class(imgs):
+def show_image_from_each_class(imgs, n_genres=10):
 
-    fig, axs = plt.subplots(2, 5)
+    fig, axs = plt.subplots(2, (n_genres+1)//2)
+    
     df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["label"])
     axs = [ax for row in axs for ax in row]
-    for i in range(10):
+    for i in range(n_genres):
         ax = axs[i]
         ax.axis("off")
         ax.set_title(genres[i])

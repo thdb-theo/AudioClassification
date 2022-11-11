@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.io import wavfile
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-
+import librosa, librosa.display
 
 def rgb2gray(rgb):
     r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
@@ -30,7 +30,7 @@ cuts = [1, 0.9, 0.8, 0.7]
 
 extended_labels = onehot_encoded.repeat(repeats=len(cuts), axis=0)
 
-np.save("../data/processed/labels.npy", extended_labels)
+np.save("../data/processed/labels2.npy", extended_labels)
 
 # extract data
 audio_dict = {}
@@ -53,11 +53,25 @@ for genre_folder in sorted(genre_folders):
 def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
     samplerate, song = audio_dict[song_name]
     song = song[:int(len(song) * cut_ratio)]
+    song = np.array([float(i) for i in song])
 
-    f, t, Sxx = scipy.signal.spectrogram(song, samplerate)
+    # this is the number of samples in a window per fft
+    n_fft = 2048# The amount of samples we are shifting after each fft
+    hop_length = 512
+
+    # f, t, Sxx = scipy.signal.spectrogram(song, samplerate)
+    # fig = plt.figure(figsize=(200, 200), dpi=1)
+
+    mel_signal = librosa.feature.melspectrogram(y=song, sr=samplerate, hop_length=hop_length, 
+        n_fft=n_fft)
+
+    spectrogram = np.abs(mel_signal)
+    power_to_db = librosa.power_to_db(spectrogram, ref=np.max)
     fig = plt.figure(figsize=(200, 200), dpi=1)
+    librosa.display.specshow(power_to_db, sr=samplerate, cmap="gray", 
+    hop_length=hop_length)
 
-    plt.pcolormesh(t, f, np.log1p(Sxx), shading='gouraud')
+    # plt.pcolormesh(t, f, np.log1p(Sxx), shading='gouraud')
     plt.axis('off')
     plt.tight_layout(pad=0)
     fig.canvas.draw()
@@ -68,7 +82,8 @@ def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
 
     gray_image = rgb2gray(mplimage)
     if save_image:
-        plt.savefig(f"../data/processed/{song_name}-{cut_ratio}.png")
+        filename = f"../data/processed/{song_name}-{cut_ratio}.png"
+        plt.savefig(filename)
     plt.close()
     return gray_image
 
