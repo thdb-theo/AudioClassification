@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.io import wavfile
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-import librosa, librosa.display
+# import librosa, librosa.display
 
 # keeping the first one each time if exact rep
 EXCLUDE_LIST: list = [
@@ -65,6 +65,10 @@ def exclude_labels(df, exclude_values=[]):
 
 df = extract_labels()
 df = exclude_labels(df, EXCLUDE_LIST)
+
+print(df.shape)
+
+quit()
 
 
 # one-hot encoding
