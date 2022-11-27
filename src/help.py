@@ -3,7 +3,11 @@ import random
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["label"])
+try:
+    df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["label"])
+except FileNotFoundError:
+    df = pd.read_csv("/content/drive/MyDrive/features_30_sec.csv", usecols=["label"])
+
 genres = sorted(df["label"].unique())
 
 
@@ -17,7 +21,6 @@ def show_image_from_each_class(imgs, genre_indices, n_genres=10):
 
     fig, axs = plt.subplots(2, (n_genres+1)//2)
     
-    df = pd.read_csv("../data/Data/features_30_sec.csv", usecols=["label"])
     axs = [ax for row in axs for ax in row]
     for i in range(n_genres):
         ax = axs[i]
