@@ -26,11 +26,15 @@ integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
 onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
 print(onehot_encoded.shape)
 
-cuts = [1, 0.9, 0.8, 0.7]
+def smooth_labels(labels, factor):
+	labels *= 1 - factor
+	labels += factor / labels.shape[1]
+	return labels
 
-extended_labels = onehot_encoded.repeat(repeats=len(cuts), axis=0)
 
-np.save("../data/processed/labels2.npy", extended_labels)
+smoothed_labels = smooth_labels(onehot_encoded, 0.1)
+
+np.save("../data/processed/labels2.npy", smoothed_labels)
 
 # extract data
 audio_dict = {}
@@ -50,9 +54,8 @@ for genre_folder in sorted(genre_folders):
             print(err)
 
 
-def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
+def create_spectogram(song_name, save_image=False):
     samplerate, song = audio_dict[song_name]
-    song = song[:int(len(song) * cut_ratio)]
     song = np.array([float(i) for i in song])
 
     # this is the number of samples in a window per fft
@@ -67,7 +70,7 @@ def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
 
     spectrogram = np.abs(mel_signal)
     power_to_db = librosa.power_to_db(spectrogram, ref=np.max)
-    fig = plt.figure(figsize=(200, 200), dpi=1)
+    fig = plt.figure(figsize=(100, 100), dpi=1)
     librosa.display.specshow(power_to_db, sr=samplerate, cmap="gray", 
     hop_length=hop_length)
 
@@ -82,15 +85,14 @@ def create_spectogram(song_name, save_image=False, cut_ratio=1.0):
 
     gray_image = rgb2gray(mplimage)
     if save_image:
-        filename = f"../data/processed/{song_name}-{cut_ratio}.png"
+        filename = f"../data/processed/{song_name}.png"
         plt.savefig(filename)
     plt.close()
     return gray_image
 
 images = []
 for song in tqdm(audio_dict.keys()):
-    for cut in cuts:
-        image = create_spectogram(song, save_image=False, cut_ratio=cut)
-        images.append(image)
+    image = create_spectogram(song, save_image=False)
+    images.append(image)
 images_array = np.stack(images, axis=0)
 np.save("../data/processed/images2.npy", images_array)
